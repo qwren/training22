@@ -1,0 +1,73 @@
+#### ftrace/trace-cmd
+$ cd ftrace
+$ gcc ftrace_read.c -o ftrace_read
+$ sudo trace-cmd record -p function_graph -F ./ftrace_read
+$ sudo trace-cmd report > tmp
+
+#### perf & flame graph
+$ cd perf 
+$ gcc test.c -o test
+$ sudo perf stat ./test
+$ sudo perf record ./test
+$ sudo perf record -g ./test
+$ sudo perf report
+
+$ sudo perf top //另一个终端运行,能够显示每个程序中每个函数耗时的比例
+
+$ gcc flame.c -o flame 
+$ sudo perf record -g ./flame
+$ sudo perf script -i perf.data &> perf.unfold
+$ sudo ~/work/FlameGraph/stackcollapse-perf.pl perf.unfold &> perf.folded
+$ sudo ~/work/FlameGraph/flamegraph.pl perf.folded > perf.svg
+or
+$ sudo perf script | ~/work/FlameGraph/stackcollapse-perf.pl | ~/work/FlameGraph/flamegraph.pl > perf.svg
+$ firefox output.svg
+
+$ gcc timechart.c -pthread -o timechart
+$ sudo perf sched record sleep 10 //把系统运行调度情况录制10s
+$ sudo perf timechart
+$ firefox output.svg
+//把线程数目改成10再测试
+
+$ sudo trace-cmd record -e 'sched_wakeup*' -e sched_switch -e 'sched_migrate*'
+$ kernelshark trace.dat
+
+#### CPU cgroup
+编译two-loops.c, gcc two-loops.c -pthread，运行三份
+* 用top观察CPU利用率，大概各自66%。
+* 创建A,B两个cgroup
+
+        :/sys/fs/cgroup/cpu$ sudo mkdir A
+        :/sys/fs/cgroup/cpu$ sudo mkdir B
+* 把3个a.out中的2个加到A，1个加到B。
+
+        :/sys/fs/cgroup/cpu/A$ sudo sh -c 'echo 14995 > cgroup.procs'
+        :/sys/fs/cgroup/cpu/A$ sudo sh -c 'echo 14998 > cgroup.procs'
+        :/sys/fs/cgroup/cpu/A$ cd ..
+        :/sys/fs/cgroup/cpu$ cd B/
+        :/sys/fs/cgroup/cpu/B$ sudo sh -c 'echo 15001 > cgroup.procs'
+
+* 这次发现3个a.out的CPU利用率大概是50%, 50%, 100%。
+* 杀掉第2个和第3个a.out，然后调整cgroup A的quota，观察14995的CPU利用率变化
+
+        :/sys/fs/cgroup/cpu/B$ kill 14998
+        :/sys/fs/cgroup/cpu/B$ kill 15001
+* 设置A group的quota为20ms：
+
+        :/sys/fs/cgroup/cpu/A$ sudo sh -c 'echo 20000 > cpu.cfs_quota_us'
+* 设置A group的quota为40ms：
+
+        :/sys/fs/cgroup/cpu/A$ sudo sh -c 'echo 40000 > cpu.cfs_quota_us'
+* 以上各自情况，用top观察a.out CPU利用率。
+
+#### memory cgroup
+$ cd /sys/fs/cgroup/memory/
+$ sudo mkdir A
+$ sudo sh -c 'echo 200M > memory.limit_in_bytes'
+$ sudo sh -c 'echo 0 > memory.swappiness' //禁止当前cgroup使用swap
+
+$ gcc oom.c -o oom
+$ sudo cgexec -g memory:A ./oom
+
+#### IO cgroup
+

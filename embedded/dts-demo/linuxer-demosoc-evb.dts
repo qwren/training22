@@ -1,0 +1,41 @@
+/dts-v1/;
+
+/include/ "linuxer-demosoc.dtsi"
+
+/ {
+	model = "Linuxer Demosoc EVB Board";
+	compatible = "linuxer,demosoc-evb", "linuxer,demosoc";
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x20000000>;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,115200 root=/dev/mtdblock5 rw rootfstype=ubifs";
+	};
+
+	axi@40000000 {
+		peri-iobg@b0000000 {
+			spi@d0000 {
+				status = "disabled";
+			};
+			i2c@e0000 {
+				pixcir_ts@5c {
+					compatible = "pixcir,pixcir_tangoc";
+					reg = <0x5c>;
+					interrupt-parent = <&gpio0>;
+					interrupts = <17 0>;
+					attb-gpio = <&gpio0 22 0>;
+					touchscreen-size-x = <1024>;
+					touchscreen-size-y = <600>;
+				};
+			};
+		};
+	};
+
+};
+
+&uart0 {
+	status = "okay";
+};

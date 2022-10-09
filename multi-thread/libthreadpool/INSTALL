@@ -1,0 +1,5 @@
+1. type 'make' to compile the package.
+
+2. type 'make' to install the program.
+
+3. You can remove the package files from the sourcecode dir by typing 'make uninstall'.
