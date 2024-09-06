@@ -1,0 +1,36 @@
+<domain type='kvm'>
+    <name>demo</name>
+    <memory>524288</memory>
+    <currentMemory>524288</currentMemory>
+    <vcpu>1</vcpu>
+    <os>
+        <type arch='x86_64' machine='pc'>hvm</type>
+        <boot dev='cdrom'/>
+    </os>
+    <features>
+        <acpi/>
+        <apic/>
+        <pae/>
+    </features>
+    <on_poweroff>destroy</on_poweroff>
+    <on_reboot>restart</on_reboot>
+    <on_crash>restart</on_crash>
+    <devices>
+        <emulator>/usr/bin/kvm</emulator>
+        <disk type='file' device='disk'>
+            <source file='/home/rqw/work/virt/libvirt/demo.qcow2'/>
+            <target dev='hda' bus='ide'/>
+        </disk>
+        <disk type='file' device='cdrom'>
+            <source file='/home/rqw/Downloads/ubuntu-16.04.6-desktop-i386.iso'/>
+            <target dev='hdc' bus='ide'/>
+            <readonly/>
+        </disk>
+        <interface type='network'>
+            <source network='default'/>
+        </interface>
+        <input type='mouse' bus='ps2'/>
+        <graphics type='vnc' port='-1'/>
+    </devices>
+</domain>
+
