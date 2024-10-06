@@ -285,7 +285,9 @@ $ tree -L 1 layer0
 
 6.2. runtime/runc
 $ mkdir rootfs
+# 获得容器的 rootfs 并放置在指定文件夹
 $ docker export $(docker create nginx:latest) | tar -C rootfs -xvf -
+# 通过 Runtime 指令生成默认的 config.json 文件
 $ runc spec
 $ tree -L 2
 
