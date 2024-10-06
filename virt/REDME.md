@@ -286,16 +286,29 @@ $ tree -L 1 layer0
 6.2. runtime/runc
 $ mkdir rootfs
 # 获得容器的 rootfs 并放置在指定文件夹
-$ docker export $(docker create nginx:latest) | tar -C rootfs -xvf -
+$ sudo docker export $(sudo docker create nginx:latest) | tar -C rootfs -xvf -
 # 通过 Runtime 指令生成默认的 config.json 文件
 $ runc spec
 $ tree -L 2
+$ cat config.json
 
-$ runc create testid
-# 将config.json里terminal字段改成false
-$ runc list
-$ runc start testid
-$ runc state testid
+# 以foreground模式运行容器
+$ sudo runc run testid
+# 最终进入了一个新创建的容器内的 shell
+# 切换到另一个终端
+$ pstree | grep runc
+
+# 将config.json里terminal字段改成false, 把 "args": ["sh"] 改为 "args": ["sleep", “infinity"]"]
+# 以分离模式运行容器
+$ sudo runc run testid --detach
+$ pstree
+ 
+$ sudo runc create testid
+$ sudo runc list
+$ sudo runc start testid
+$ sudo runc state testid
+$ sudo runc exec -t testid /bin/sh
+$ sudo runc kill testid 9
 $ runc delete testid
 
 7. LXC
