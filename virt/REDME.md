@@ -204,9 +204,15 @@ $ id
 
 4. cgroup
 $ mount | grep cgroup
+# 当前系统的进程，都自动的关联到了 systemd 在 /sys/fs/cgroup/ 目录下创建的 cgroup 中了
 $ vim /proc/self/cgroup
 # hierarchy_id:controller_list:cgroup_path
 $ vim /proc/cgroups
+# 查看系统的整体 cgroup 层级, cgroup 树的最高层由 slice 构成
+$ systemd-cgls
+# 查看 cgroup 层级的动态信息
+$ systemd-cgtop
+
 4.1 CPU cgroup
 编译two-loops.c, gcc two-loops.c -pthread，运行三份
 * 用top观察CPU利用率，大概各自66%。
@@ -265,7 +271,10 @@ $ sudo vim /etc/docker/daemon.json
     "registry-mirrors": ["https://ccr.ccs.tencentyun.com","https://ccr.cs.tencentyun.com"]
 }
 $ sudo service docker restart
+# pull的image默认存在 /var/lib/docker/文件夹下
 $ sudo docker run hello-world
+# 查看/var/lib/docker/image/overlay2/repositories.json文件, 和docker images的内容一致
+$ sudo cat /var/lib/docker/image/overlay2/repositories.json | jq
 
 6. OCI
 6.1 image
@@ -339,6 +348,7 @@ $ echo "$USER veth lxcbr0 2" | sudo tee -a /etc/lxc/lxc-usernet
 # 默认情况下，下面命令会创建一个最小的 Ubuntu 环境，版本号与你的宿主机一致
 # 容器被放到 /var/lib/lxc/<容器名> 这个目录下，容器的根文件系统放在 /var/lib/lxc/<容器名>/rootfs 目录下。
 # 创建过程中下载的软件包保存在 /var/cache/lxc 目录下面，当另外建一个一样的容器时，可以省去很多下载时间。
+# 模板实际上就是一个脚本文件(位于/usr/share/lxc/templates目录)
 $ sudo lxc-create -n <container-name> -t ubuntu
 # 检查容器状态
 $ sudo lxc-ls -f
